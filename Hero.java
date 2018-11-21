@@ -1,5 +1,9 @@
 
-import greenfoot.*;
+import greenfoot.Actor;
+import greenfoot.Greenfoot;
+
+
+
 
 /**
  *
@@ -39,13 +43,18 @@ public class Hero extends Mover {
     }
 
     public void handleInput() {
-        if (Greenfoot.isKeyDown("w")) {
+        if (Greenfoot.isKeyDown("space")) {
+            setImage("p1_duck.png");
+            velocityX *= drag -20;
+        } if(Greenfoot.isKeyDown("space")) {
+            setImage("p1.png");
             velocityY = -20;
-        }
-
-        if (Greenfoot.isKeyDown("a")) {
+        }  
+        if (Greenfoot.isKeyDown("a")){
+            setImage("p1_front.png");
             velocityX = -2;
         } else if (Greenfoot.isKeyDown("d")) {
+            setImage("p1_walk05.png");
             velocityX = 2;
         }
     }
@@ -57,4 +66,6 @@ public class Hero extends Mover {
     public int getHeight() {
         return getImage().getHeight();
     }
+    
 }
+//hi hallo 
