@@ -14,10 +14,11 @@ public class Hero extends Mover {
     private final double gravity;
     private final double acc;
     private final double drag;
+    
 
     public Hero() {
         super();
-        gravity = 9.8;
+        gravity = 4.8;
         acc = 0.6;
         drag = 0.8;
         setImage("p1.png");
@@ -43,16 +44,14 @@ public class Hero extends Mover {
     }
 
     public void handleInput() {
-        if (Greenfoot.isKeyDown("space")) {
-            setImage("p1_duck.png");
-            velocityX *= drag -20;
-        } if(Greenfoot.isKeyDown("space")) {
+ 
+         if(Greenfoot.isKeyDown("space")) {
             setImage("p1.png");
             velocityY = -20;
         }  
         if (Greenfoot.isKeyDown("a")){
             setImage("p1_front.png");
-            velocityX = -2;
+            velocityX = -3;
         } else if (Greenfoot.isKeyDown("d")) {
             setImage("p1_walk05.png");
             velocityX = 2;
