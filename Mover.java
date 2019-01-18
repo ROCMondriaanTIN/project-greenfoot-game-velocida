@@ -6,17 +6,19 @@ import greenfoot.*;
  * @author R. Springer
  */
 public class Mover extends Actor {
-
+public int star;
+public int diamant;
     public int screenX;
     public int screenY;
     public double velocityX;
     public double velocityY;
     protected Camera camera;
-
+    public int keyYellow;
     private int worldX;
     private int worldY;
     private boolean firstLocation = true;
     private boolean hasCamera;
+    
 
     /**
      * Methode to set the camera a Mover can have

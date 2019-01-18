@@ -9,11 +9,18 @@ import java.util.List;
  */
 public class CollisionEngine {
 
+<<<<<<< HEAD
+=======
+    
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
     public static final boolean DEBUG = false;
     private final Camera camera;
     private final TileEngine tileEngine;
     private final List<Mover> collidingActors;
+<<<<<<< HEAD
     private final List<Tile> collidingTiles;
+=======
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
 
     /**
      * The constructor of the CollisionEngine.
@@ -24,7 +31,10 @@ public class CollisionEngine {
     public CollisionEngine(TileEngine tileEngine, Camera camera) {
         this.tileEngine = tileEngine;
         collidingActors = new ArrayList<>();
+<<<<<<< HEAD
         collidingTiles = new ArrayList<>(6);
+=======
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
         this.camera = camera;
     }
 
@@ -55,7 +65,15 @@ public class CollisionEngine {
      */
     public void update() {
         for (Mover mover : this.collidingActors) {
+<<<<<<< HEAD
             List<Tile> tiles = getCollidingTiles(mover, false);
+=======
+            int actorLeft = getActorLeft(mover);
+            int actorRight = getActorRight(mover);
+            int actorTop = getActorTop(mover);
+            int actorBottom = getActorBottom(mover);
+            List<Tile> tiles = getCollidingTiles(actorTop, actorLeft, actorRight, actorBottom, mover.getX(), mover.getY());
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
 
             if (!tiles.isEmpty()) {
                 for (Tile tile : tiles) {
@@ -94,7 +112,11 @@ public class CollisionEngine {
      * @return
      */
     public boolean detect(Mover mover, int actorLeft, int actorRight, int actorTop, int actorBottom) {
+<<<<<<< HEAD
         return !getCollidingTiles(actorTop, actorLeft, actorRight, actorBottom, mover.getX(), mover.getY(), false).isEmpty();
+=======
+        return !getCollidingTiles(actorTop, actorLeft, actorRight, actorBottom, mover.getX(), mover.getY()).isEmpty();
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
     }
 
     /**
@@ -108,6 +130,7 @@ public class CollisionEngine {
      * @param midY The middle y position
      * @return Returns a list of tiles that are located on those positions.
      */
+<<<<<<< HEAD
     public List<Tile> getCollidingTiles(int top, int left, int right, int bottom, int midX, int midY, boolean addNoneSolid) {
         collidingTiles.clear();
 
@@ -175,6 +198,58 @@ public class CollisionEngine {
         int actorTop = getActorTop(mover);
         int actorBottom = getActorBottom(mover);
         return this.getCollidingTiles(actorTop, actorLeft, actorRight, actorBottom, mover.getX(), mover.getY(), addNoneSolid);
+=======
+    private List<Tile> getCollidingTiles(int top, int left, int right, int bottom, int midX, int midY) {
+        List<Tile> tiles = new ArrayList<>();
+
+        if (tileEngine.checkTileSolid(left, top)) {
+            Tile tile = tileEngine.getTileAtXY(left, top);
+            tiles.add(tile);
+        }
+        if (tileEngine.checkTileSolid(left, bottom)) {
+            Tile tile = tileEngine.getTileAtXY(left, bottom);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(right, bottom)) {
+            Tile tile = tileEngine.getTileAtXY(right, bottom);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(right, top)) {
+            Tile tile = tileEngine.getTileAtXY(right, top);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(midX, top)) {
+            Tile tile = tileEngine.getTileAtXY(midX, top);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(midX, bottom)) {
+            Tile tile = tileEngine.getTileAtXY(midX, bottom);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(left, midY)) {
+            Tile tile = tileEngine.getTileAtXY(left, midY);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        if (tileEngine.checkTileSolid(right, midY)) {
+            Tile tile = tileEngine.getTileAtXY(right, midY);
+            if (!tiles.contains(tile)) {
+                tiles.add(tile);
+            }
+        }
+        return tiles;
+>>>>>>> parent of 6aed53a... Heel veel shit verandert
     }
 
     /**

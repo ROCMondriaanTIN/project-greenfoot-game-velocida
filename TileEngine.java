@@ -1,6 +1,5 @@
 
 import greenfoot.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,285 +8,214 @@ import java.util.List;
  */
 public class TileEngine {
 
-    
-    public static final boolean DEBUG = false;
-    private final Camera camera;
-    private final TileEngine tileEngine;
-    private final List<Mover> collidingActors;
+    public static int TILE_WIDTH;
+    public static int TILE_HEIGHT;
+    public static int SCREEN_HEIGHT;
+    public static int SCREEN_WIDTH;
+    public static int MAP_WIDTH;
+    public static int MAP_HEIGHT;
+
+    private World world;
+    private int[][] map;
+    private Tile[][] generateMap;
+    private TileFactory tileFactory;
 
     /**
-     * The constructor of the CollisionEngine.
+     * Constuctor of the TileEngine
      *
-     * @param tileEngine The TileEngine
-     * @param camera The camera
+     * @param world A World class or a extend of it.
+     * @param tileWidth The width of the tile used in the TileFactory and
+     * calculations
+     * @param tileHeight The heigth of the tile used in the TileFactory and
+     * calculations
      */
-    public TileEngine(TileEngine tileEngine, Camera camera) {
-        this.tileEngine = tileEngine;
-        collidingActors = new ArrayList<>();
-        this.camera = camera;
+    public TileEngine(World world, int tileWidth, int tileHeight) {
+        this.world = world;
+        TILE_WIDTH = tileWidth;
+        TILE_HEIGHT = tileHeight;
+        SCREEN_WIDTH = world.getWidth();
+        SCREEN_HEIGHT = world.getHeight();
+        this.tileFactory = new TileFactory();
     }
 
     /**
-     * This methode lets you add a Mover that will be in this collision engine.
-     * When you add a mover it will collid with all the tiles in the world.
+     * Constuctor of the TileEngine
      *
-     * @param mover A Mover class or a extend of it.
+     * @param world A World class or a extend of it.
+     * @param tileWidth The width of the tile used in the TileFactory and
+     * calculations
+     * @param tileHeight The heigth of the tile used in the TileFactory and
+     * calculations
+     * @param map A tilemap with numbers
      */
-    public void addCollidingMover(Mover mover) {
-        this.collidingActors.add(mover);
+    public TileEngine(World world, int tileWidth, int tileHeight, int[][] map) {
+        this(world, tileWidth, tileHeight);
+        this.setMap(map);
     }
 
     /**
-     * This methode will remove the Mover from the collision engine
+     * The setMap method used to set a map. This method also clears the previous
+     * map and generates a new one.
      *
-     * @param mover A Mover class or a extend of it.
+     * @param map
      */
-    public void removeCollidingActor(Mover mover) {
-        if (this.collidingActors.contains(mover)) {
-            this.collidingActors.remove(mover);
-        }
+    public void setMap(int[][] map) {
+        this.clearTilesWorld();
+        this.map = map;
+        MAP_HEIGHT = this.map.length;
+        MAP_WIDTH = this.map[0].length;
+        this.generateMap = new Tile[MAP_HEIGHT][MAP_WIDTH];
+        this.generateWorld();
     }
 
     /**
-     * This methode must be called every update of the game. Else the collision
-     * will not apply correctly
+     * The setTileFactory sets a tilefactory. You can use this if you want to
+     * create you own tilefacory and use it in the class.
+     *
+     * @param tf A Tilefactory or extend of it.
      */
-    public void update() {
-        for (Mover mover : this.collidingActors) {
-            int actorLeft = getActorLeft(mover);
-            int actorRight = getActorRight(mover);
-            int actorTop = getActorTop(mover);
-            int actorBottom = getActorBottom(mover);
-            List<Tile> tiles = getCollidingTiles(actorTop, actorLeft, actorRight, actorBottom, mover.getX(), mover.getY());
+    public void setTileFactory(TileFactory tf) {
+        this.tileFactory = tf;
+    }
 
-            if (!tiles.isEmpty()) {
-                for (Tile tile : tiles) {
-                    boolean resolved = resolve(mover, tile);
-//                    if(resolved) {
-        int mapID = 0;
-//                    }
-                mapID++;
+    /**
+     * Removes al the tiles from the world.
+     */
+    public void clearTilesWorld() {
+        List<Tile> removeObjects = this.world.getObjects(Tile.class);
+        this.world.removeObjects(removeObjects);
+        this.map = null;
+        this.generateMap = null;
+        MAP_HEIGHT = 0;
+        MAP_WIDTH = 0;
+    }
+
+    /**
+     * Creates the tile world based on the TileFactory and the map icons.
+     */
+    public void generateWorld() {
+        for (int y = 0; y < MAP_HEIGHT; y++) {
+            for (int x = 0; x < MAP_WIDTH; x++) {
+                // Nummer ophalen in de int array
+                int mapIcon = this.map[y][x];
+                if (mapIcon == -1) {
+                    continue;
                 }
-                createdTile.setMapID(mapID);
-                createdTile.setMapIcon(mapIcon);
+                // Als de mapIcon -1 is dan wordt de code hieronder overgeslagen
+                // Dus er wordt geen tile aangemaakt. -1 is dus geen tile;
+                Tile createdTile = this.tileFactory.createTile(mapIcon);
 
+                addTileAt(createdTile, x, y);
             }
         }
     }
 
     /**
-     * This methode will detect if a Mover is overlapping with the tiles
+     * Adds a tile on the colom and row. Calculation is based on TILE_WIDTH and
+     * TILE_HEIGHT
      *
-     * @param mover A Mover class or a extend of it.
-     * @return Returns true if the mover is overlapping
+     * @param tile The Tile
+     * @param colom The colom where the tile exist in the map
+     * @param row The row where the tile exist in the map
      */
-    public boolean detect(Mover mover) {
-        int actorLeft = getActorLeft(mover);
-        int actorRight = getActorRight(mover);
-        int actorTop = getActorTop(mover);
-        int actorBottom = getActorBottom(mover);
-
-        return this.detect(mover, actorLeft, actorRight, actorTop, actorBottom);
-        tile.setColom(colom);
-        tile.setRow(row);
+    public void addTileAt(Tile tile, int colom, int row) {
+        // De X en Y positie zitten het midden van de Actor. 
+        // De tilemap genereerd een wereld gebaseerd op dat de X en Y
+        // positie links boven in zitten. Vandaar de we de helft van de 
+        // breedte en hoogte optellen zodat de X en Y links boven zit voor 
+        // het toevoegen van het object.
+        this.world.addObject(tile, (colom * TILE_WIDTH) + TILE_WIDTH / 2, (row * TILE_HEIGHT) + TILE_HEIGHT / 2);
+        // Toevoegen aan onze lokale array. Makkelijk om de tile op te halen
+        // op basis van een x en y positie van de map
+        this.generateMap[row][colom] = tile;
     }
 
     /**
-     * This methode will detect if a Mover is overlapping with the tiles
+     * Retrieves a tile at the location based on colom and row in the map
      *
-     * @param mover A Mover class or a extend of it.
-     * @param actorLeft The far most left x position of the Mover.
-     * @param actorRight The far most right x position of the Mover.
-     * @param actorTop The far most top y position of the Mover.
-     * @param actorBottom The far most bottom y position of the Mover.
-     * @return
+     * @param colom
+     * @param row
+     * @return The tile at the location colom and row. Returns null if it cannot
+     * find a tile.
      */
-    public boolean detect(Mover mover, int actorLeft, int actorRight, int actorTop, int actorBottom) {
-        if (row < 0 || row >= MAP_HEIGHT || colom < 0 || colom >= MAP_WIDTH) {
-        return this.generateMap[row][colom];
+    public Tile getTileAt(int colom, int row) {
+        try {
+            return this.generateMap[row][colom];
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
-     * This methode will get all the tiles at the different x and y position
+     * Retrieves a tile based on a x and y position in the world
      *
-     * @param top The far most top y position
-     * @param left The far most left x position
-     * @param right The far most right x position
-     * @param bottom The far most bottom y position
-     * @param midX The middle x position
-     * @param midY The middle y position
-     * @return Returns a list of tiles that are located on those positions.
+     * @param x X-position in the world
+     * @param y Y-position in the world
+     * @return The tile at the location colom and row. Returns null if it cannot
+     * find a tile.
      */
-    private List<Tile> getCollidingTiles(int top, int left, int right, int bottom, int midX, int midY) {
-        List<Tile> tiles = new ArrayList<>();
+    public Tile getTileAtXY(int x, int y) {
+        int col = getColumn(x);
+        int row = getRow(y);
 
-        if (tileEngine.checkTileSolid(left, top)) {
-            Tile tile = tileEngine.getTileAtXY(left, top);
-            tiles.add(tile);
-        }
-        if (tileEngine.checkTileSolid(left, bottom)) {
-            Tile tile = tileEngine.getTileAtXY(left, bottom);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(right, bottom)) {
-            Tile tile = tileEngine.getTileAtXY(right, bottom);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(right, top)) {
-            Tile tile = tileEngine.getTileAtXY(right, top);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(midX, top)) {
-            Tile tile = tileEngine.getTileAtXY(midX, top);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(midX, bottom)) {
-            Tile tile = tileEngine.getTileAtXY(midX, bottom);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(left, midY)) {
-            Tile tile = tileEngine.getTileAtXY(left, midY);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        if (tileEngine.checkTileSolid(right, midY)) {
-            Tile tile = tileEngine.getTileAtXY(right, midY);
-            if (!tiles.contains(tile)) {
-                tiles.add(tile);
-            }
-        }
-        return tiles;
-        if (colom != -1 && row != -1) {
-            return this.removeTileAt(colom, row);
-        }
-        return false;
+        Tile tile = getTileAt(col, row);
+        return tile;
     }
 
     /**
-     * This methode will resolves the overlapping.
+     * This methode checks if a tile on a x and y position in the world is solid
+     * or not.
      *
-     * @param mover A Mover class or a extend of it.
-     * @param tile A Tile class or a extend of it.
-     * @return Returns a true if the overlap was resolved.
+     * @param x X-position in the world
+     * @param y Y-position in the world
+     * @return Tile at location is solid
      */
-    public boolean resolve(Mover mover, Tile tile) {
-        int left = getActorLeft(mover);
-        int right = getActorRight(mover);
-        int top = getActorTop(mover);
-        int bottom = getActorBottom(mover);
-        int x = mover.getX();
-        int y = mover.getY();
-        int topTile = CollisionEngine.getActorTop(tile) + camera.getY();
-        int bottomTile = CollisionEngine.getActorBottom(tile) + camera.getY();
-        int leftTile = CollisionEngine.getActorLeft(tile) + camera.getX();
-        int rightTile = CollisionEngine.getActorRight(tile) + camera.getX();
-
-        double overlapX = 0;
-        double overlapY = 0;
-
-        if (bottom > topTile && top < bottomTile) {
-            if (mover.velocityY >= 0) {
-                overlapY = topTile - bottom;
-            } else {
-                overlapY = bottomTile - top;
-            }
-        }
-
-        if (right > leftTile && left < rightTile) {
-            if (mover.velocityX >= 0) {
-                overlapX = leftTile - right;
-            } else {
-                overlapX = rightTile - left;
-            }
-        }
-
-        if (DEBUG) {
-            System.out.println("Player:\n" + mover);
-            System.out.println("Tile:\n" + tile);
-        }
-
-        if (Math.abs(overlapX) > 0 && Math.abs(overlapY) > 0) {
-            if (Math.abs(overlapY) > Math.abs(overlapX)) {
-                mover.velocityX = 0;
-                x += overlapX;
-            } else {
-                mover.velocityY = 0;
-                y += overlapY;
-            }
-            mover.setLocation(x, y);
+    public boolean checkTileSolid(int x, int y) {
+        Tile tile = getTileAtXY(x, y);
+        if (tile != null && tile.isSolid) {
             return true;
         }
         return false;
     }
 
     /**
-     * Calculate the half width of a Actor
+     * This methode returns a colom based on a x position.
      *
-     * @param actor An Actor class or an extend of it.
-     * @return returns the half width
+     * @param x
+     * @return the colom
      */
-    public static int getActorHalfWidth(Actor actor) {
-        return actor.getImage().getWidth() / 2;
+    public int getColumn(int x) {
+        return (int) Math.floor(x / TILE_WIDTH);
     }
 
     /**
-     * Calculate the half hieght of a Actor
+     * This methode returns a row based on a y position.
      *
-     * @param actor An Actor class or an extend of it.
-     * @return returns the half height
+     * @param y
+     * @return the row
      */
-    public static int getActorHalfHeigth(Actor actor) {
-        return actor.getImage().getHeight() / 2;
+    public int getRow(int y) {
+        return (int) Math.floor(y / TILE_HEIGHT);
     }
 
     /**
-     * Calculate the top Y position of the actor
+     * This methode returns a x position based on the colom
      *
-     * @param actor An Actor class or an extend of it.
-     * @return return top Y actor position
+     * @param col
+     * @return The x position
      */
-    public static int getActorTop(Actor actor) {
-        return actor.getY() - actor.getImage().getHeight() / 2;
+    public int getX(int col) {
+        return col * TILE_WIDTH;
     }
 
     /**
-     * Calculate the bottom Y position of the actor
+     * This methode returns a y position based on the row
      *
-     * @param actor An Actor class or an extend of it.
-     * @return return bottom Y actor position
+     * @param row
+     * @return The y position
      */
-    public static int getActorBottom(Actor actor) {
-        return actor.getY() + actor.getImage().getHeight() / 2;
+    public int getY(int row) {
+        return row * TILE_HEIGHT;
     }
 
-    /**
-     * Calculate the left X position of the actor
-     *
-     * @param actor An Actor class or an extend of it.
-     * @return return left X actor position
-     */
-    public static int getActorLeft(Actor actor) {
-        return actor.getX() - actor.getImage().getWidth() / 2;
-    }
-
-    /**
-     * Calculate the right X position of the actor
-     *
-     * @param actor An Actor class or an extend of it.
-     * @return return right X actor position
-     */
-    public static int getActorRight(Actor actor) {
-        return actor.getX() + actor.getImage().getWidth() / 2;
-    }
 }
