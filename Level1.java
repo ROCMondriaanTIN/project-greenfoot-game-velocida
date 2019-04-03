@@ -81,13 +81,11 @@ public class Level1 extends World {
         Slime slime4 = new Slime();
         addObject(slime4,2726,293);
         //==========================//
-        coinGold coinGold = new coinGold();
-        addObject(coinGold,4390,553);
-        coinGold coinGold2 = new coinGold();
-        addObject(coinGold2,662,461);
-        coinGold coinGold3 = new coinGold();
-        addObject(coinGold3,3302,461);
-
+       
+        addObject(new Gold(false),4390,553);
+        addObject(new Silver(false),662,461);
+        addObject(new Silver(false),3302,461);
+        addObject(new Silver(false),146, 85); 
        
 
         Box box = new Box ();
@@ -108,9 +106,7 @@ public class Level1 extends World {
         addObject(door,5677,215);
 
         //=========================//
-        Music music = new Music();
-        addObject(music,61,54);
-        music.getClass();
+      
         //=========================//
         RozeKarakter rozeKarakter = new RozeKarakter();
         addObject(rozeKarakter,1543,433);
@@ -133,10 +129,9 @@ public class Level1 extends World {
         coinGold_hud coinGold_hud = new coinGold_hud();
         addObject(coinGold_hud,146,55);
         
-        HartHud hartHud = new HartHud();
-        addObject(hartHud,59,134);
+   
         Hud_Key hud_Key = new Hud_Key();
-        addObject(hud_Key,58,189);
+        addObject(hud_Key,75,189);
  
 
     }

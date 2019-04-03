@@ -13,6 +13,8 @@ public class Hero extends Mover {
     int duck = 0;
     int karakterKleur=1;
     public int keyYellow =0;
+    
+    Scoreboord sb;
 
     public Hero() {
 
@@ -154,7 +156,11 @@ public class Hero extends Mover {
     }
 
     public void act() {
-
+        if(sb== null)
+        {
+            sb = new Scoreboord();
+            getWorld().addObject(sb, -10, 10);
+        }
         handleInput();
 
         applyVelocity();
@@ -220,15 +226,29 @@ public class Hero extends Mover {
                 return;
             }}
 
-        coinGold_hud.aantalcoin=coinGold_hud.aantalcoin; 
-        for (Actor coinGold : getIntersectingObjects(coinGold.class)) {
-            if (coinGold!= null) {
-                Greenfoot.playSound("colect.mp3");
-                getWorld().removeObject(coinGold);
-                coinGold_hud.aantalcoin=coinGold_hud.aantalcoin;
-                coinGold_hud.aantalcoin++;
-                return;
-            }}
+        
+        for (Actor coin : getIntersectingObjects(Coin.class)) {
+            if (coin!= null) {
+                
+           if(this.isTouching(Gold.class) ){
+               Actor gold = getOneIntersectingObject(Gold.class);
+               getWorld().removeObject(gold);
+               sb.telCoin("gold");
+               
+           }
+           
+           else if(this.isTouching(Silver.class)){
+               Actor silver = getOneIntersectingObject(Silver.class);
+               getWorld().removeObject(silver); 
+               sb.telCoin("silver");
+                
+            }
+                
+            }
+            
+        }
+            
+            
 
         Hud_Ster.aantalSter=Hud_Ster.aantalSter;
 

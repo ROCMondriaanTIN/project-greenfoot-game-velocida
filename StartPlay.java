@@ -24,6 +24,8 @@ public class StartPlay extends Mover
         if(Greenfoot.mouseClicked(this)){
         sound.pause();
             Greenfoot.setWorld(new Level1());
+         
+           
         
    
      
